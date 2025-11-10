@@ -1,0 +1,52 @@
+# Node / React
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-lock.yaml
+dist
+build
+.vite
+.cache
+
+# Java / Maven
+target
+*.class
+*.jar
+*.war
+*.iml
+
+# Spring Boot
+application-local.yml
+application-dev.yml
+application-prod.yml
+
+# Docker
+docker-compose.override.yml
+*.tar
+*.gz
+*.zip
+
+# Logs
+logs
+*.log
+*.out
+
+# System / IDE files
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+*.swp
+
+# Git / CI
+.git
+.gitignore
+.github
+.gitlab-ci.yml
+
+# OS temp files
+*.bak
+*.tmp
+*.old
+*.orig
+desktop.ini
