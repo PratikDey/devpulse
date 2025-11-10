@@ -29,6 +29,9 @@ management:
     web:
       exposure:
         include: "health,info,prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 alert:
   rules:
