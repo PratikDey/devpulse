@@ -20,4 +20,5 @@ public class LogDocument {
     private String message;
     private String level;
     private Instant timestamp;
+    private String traceId;
 }
