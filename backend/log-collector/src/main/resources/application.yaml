@@ -4,16 +4,23 @@ server:
 spring:
   application:
     name: log-collector
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/devpulse_logs
+
   kafka:
     bootstrap-servers: localhost:9092
+
     consumer:
       group-id: log-collector-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.devpulse.common.dto.LogMessageDto
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/devpulse_logs
 
 management:
   endpoints:
@@ -23,3 +30,7 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+  endpoint:
+    health:
+      probes:
+        enabled: true
