@@ -5,23 +5,40 @@ spring:
   application:
     name: log-collector
 
+  # Kafka consumer configuration
   kafka:
     bootstrap-servers: localhost:9092
 
     consumer:
       group-id: log-collector-group
-      auto-offset-reset: earliest
+      auto-offset-reset: earliest # Start from the earliest offset if no committed offsets exist
+
+      ## We use ErrorHandlingDeserializer to prevent consumer crashes on invalid JSON
+      # key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      # value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+      # IMPORTANT: receive RAW string messages
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
       properties:
-        spring.json.trusted.packages: "*"
-        spring.json.value.default.type: com.devpulse.common.dto.LogMessageDto
 
+        # Accept all packages (safe because consumers are controlled)
+        spring.json.trusted.packages: "*"
+
+        ## Automatically bind JSON to LogMessageDto
+        # spring.json.value.default.type: com.devpulse.common.dto.LogMessageDto
+
+        ## Delegate actual deserialization to String + JSON deserializer
+        # spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        # spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+  # MongoDB configuration
   data:
     mongodb:
       uri: mongodb://localhost:27017/devpulse_logs
 
+# Actuator + Prometheus for monitoring
 management:
   endpoints:
     web:
