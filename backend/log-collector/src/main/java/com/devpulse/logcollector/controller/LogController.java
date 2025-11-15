@@ -13,6 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LogController {
 
+    // Doesn't require @Autowired because constructor injection happening using Lombok's @RequiredArgsConstructor
     private final LogRepository logRepository;
 
     @GetMapping
