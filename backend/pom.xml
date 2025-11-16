@@ -71,6 +71,7 @@
                         <source>${java.version}</source>
                         <target>${java.version}</target>
                         <encoding>${maven.compiler.encoding}</encoding>
+                        <parameters>true</parameters>
                     </configuration>
                 </plugin>
 
