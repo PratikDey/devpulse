@@ -1,5 +1,6 @@
 package com.devpulse.logcollector.listener;
 
+import com.devpulse.common.constants.KafkaTopics;
 import com.devpulse.common.dto.LogMessageDto;
 import com.devpulse.logcollector.service.LogPersistService;
 import com.devpulse.logcollector.service.InvalidLogService;
@@ -53,7 +54,7 @@ public class LogKafkaListener {
      * @param rawMessage The raw message payload from Kafka (JSON or invalid text)
      * @param record     Metadata-rich Kafka record (topic, partition, offset)
      */
-    @KafkaListener(topics = "devpulse-logs", groupId = "log-collector-group")
+    @KafkaListener(topics = KafkaTopics.LOG_TOPIC, groupId = "log-collector-group")
     public void consume(String rawMessage, ConsumerRecord<String, String> record) {
 
         try {
