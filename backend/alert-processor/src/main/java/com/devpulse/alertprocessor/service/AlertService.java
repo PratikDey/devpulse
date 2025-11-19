@@ -25,6 +25,22 @@ public class AlertService {
     private final WebSocketAlertPublisher wsPublisher;
     private final EmailAlertService emailService;
 
+    /**
+     * Central alert processing routine.
+     *
+     * Responsibilities:
+     *  - Normalize incoming DTO timestamp (fall back to Instant.now()).
+     *  - Convert DTO to {@link com.devpulse.alertprocessor.model.AlertDocument} and persist via {@link com.devpulse.alertprocessor.repository.AlertRepository}.
+     *  - Broadcast the saved document to WebSocket subscribers.
+     *  - Trigger email notifications for non-INFO severities (best-effort; failures are logged).
+     *
+     * Notes:
+     *  - Broadcasting and email sending are executed in try/catch blocks to avoid failing the persistence path.
+     *  - Consider making email sending asynchronous and making recipient configuration external for production use.
+     *
+     * @param dto incoming alert DTO
+     */
+
     public void handleAlert(AlertMessageDto dto) {
         // normalize timestamp
         Instant ts = dto.getTimestamp() == null ? Instant.now() : dto.getTimestamp();

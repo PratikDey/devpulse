@@ -8,6 +8,16 @@ import org.springframework.web.socket.config.annotation.*;
 /**
  * STOMP over WebSocket. Frontend subscribes to /topic/alerts.
  */
+
+/**
+ * WebSocket/STOMP configuration for frontend subscriptions.
+ *
+ * Key points:
+ *  - Registers endpoint `/alert-ws` with SockJS fallback; allowed origins are configured via the `websocket.allowed-origins` property.
+ *  - Uses Spring's simple in-memory broker for destinations prefixed with `/topic` (suitable for MVP).
+ *  - For production-scale messaging, replace the simple broker with a full-featured broker (RabbitMQ, ActiveMQ, etc.).
+ */
+
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
@@ -24,6 +34,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
+        // Simple in-memory broket for MVP; replace with full broker if needed later
         registry.enableSimpleBroker("/topic");
         registry.setApplicationDestinationPrefixes("/app");
     }

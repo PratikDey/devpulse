@@ -18,7 +18,6 @@ import java.util.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@EnableScheduling
 public class MetricsPollingScheduler {
 
     private final MetricRulesLoader loader;
@@ -34,6 +33,20 @@ public class MetricsPollingScheduler {
 
     private List<MetricRule> rules = Collections.emptyList();
     private final Map<String, Instant> cooldowns = new HashMap<>();
+
+    /**
+     * Scheduled task that polls Prometheus, evaluates rules and creates alerts when conditions fire.
+     *
+     * Behavior summary:
+     *  - Rules are loaded lazily on first poll from the configured rules file.
+     *  - For each rule the Prometheus instant query is executed and the numeric value evaluated.
+     *  - If the rule fires and is not in cooldown, an {@link com.devpulse.common.dto.AlertMessageDto} is created and handled.
+     *  - A per-rule cooldown map prevents alert spam; cooldown duration defaults to 60s when not set.
+     *  - Exceptions are caught and logged to ensure the scheduler continues running.
+     *
+     * Scheduling:
+     *  - Controlled by @Scheduled and the property `metrics.poll-interval-ms`.
+     */
 
     @Scheduled(fixedDelayString = "${metrics.poll-interval-ms:15000}")
     public void poll() {

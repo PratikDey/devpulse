@@ -23,6 +23,15 @@ public class AlertKafkaListener {
     private final AlertService alertService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Kafka message handler for raw JSON alert messages produced by log-collector.
+     *
+     * The method expects the Kafka record value to be a JSON representation of {@link com.devpulse.common.dto.AlertMessageDto}.
+     * Deserialization errors are caught and logged; raw payloads are preserved in the log for later inspection.
+     *
+     * @param record Kafka consumer record containing a String JSON payload
+     */
+
     @KafkaListener(topics = KafkaTopics.ALERT_TOPIC, groupId = "alert-processor-group")
     public void onMessage(ConsumerRecord<String, String> record) {
         String payload = record.value();

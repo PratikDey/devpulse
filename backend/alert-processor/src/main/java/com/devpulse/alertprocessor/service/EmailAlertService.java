@@ -21,6 +21,17 @@ public class EmailAlertService {
     @Value("${spring.mail.username}")
     private String fromEmailId;
 
+    /**
+     * Compose and send a simple alert email using {@link org.springframework.mail.javamail.JavaMailSender}.
+     *
+     * Important notes:
+     *  - This method is synchronous and will block until the mail sender completes. Consider annotating with @Async
+     *    or delegating to a task executor for non-blocking behavior in production.
+     *  - Recipient address is currently hard-coded; move to configurable property or address book.
+     *
+     * @param dto alert DTO used to populate subject and body
+     */
+
     public void sendAlertEmail(AlertMessageDto dto) {
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
