@@ -1,0 +1,20 @@
+# Example metric rules
+rules:
+  - id: CPU_HIGH
+    name: "CPU usage high"
+    metric: "node_cpu_seconds_total_rate" # example name / you can map to PromQL
+    promql: '100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)'
+    threshold: 80.0
+    comparator: "GREATER_THAN"
+    durationSeconds: 30
+    severity: CRITICAL
+    description: "CPU usage > 80% for 30s"
+
+  - id: HTTP_LATENCY
+    name: "HTTP p95 latency"
+    promql: 'histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[2m])) by (le))'
+    threshold: 2.0
+    comparator: "GREATER_THAN"
+    durationSeconds: 60
+    severity: WARNING
+    description: "P95 latency > 2s for 60s"

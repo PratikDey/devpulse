@@ -6,9 +6,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.Map;
 
 /**
- * Persisted alert record.
+ * MongoDB document storing alerts (both log-based and metric-based).
  */
 @Data
 @NoArgsConstructor
@@ -16,6 +17,7 @@ import java.time.Instant;
 @Builder
 @Document(collection = "alerts")
 public class AlertDocument {
+
     @Id
     private String id;
 
@@ -23,7 +25,12 @@ public class AlertDocument {
     private AlertSeverity severity;
     private String message;
     private Instant timestamp;
+
+    // Optional common fields
     private String traceId;
     private String ruleId;
     private String details;
+
+    // Flexible context to store extra information (metric value, labels, counts)
+    private Map<String, Object> context;
 }

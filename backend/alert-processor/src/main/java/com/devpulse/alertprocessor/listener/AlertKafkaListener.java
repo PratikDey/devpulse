@@ -1,7 +1,8 @@
 package com.devpulse.alertprocessor.listener;
 
+import com.devpulse.common.constants.KafkaTopics;
+import com.devpulse.common.dto.AlertMessageDto;
 import com.devpulse.alertprocessor.service.AlertService;
-import com.devpulse.common.dto.LogMessageDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,29 +11,29 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 /**
- * Listens to raw log messages on Kafka topic (devpulse-logs),
- * parses JSON to LogMessageDto and forwards to AlertService.
- *
- * We use StringDeserializer at consumer config and parse manually to avoid container-level deserialization failures.
+ * Consumes alert events produced by log-collector (topic: devpulse-alerts).
+ * We receive message as raw JSON string and convert to AlertMessageDto using ObjectMapper.
+ * This avoids custom ConsumerFactory and keeps config YAML-only.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class AlertKafkaListener {
 
-    private final ObjectMapper objectMapper;
     private final AlertService alertService;
+    private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = "devpulse-logs", groupId = "alert-processor-group")
-    public void consume(String rawMessage, ConsumerRecord<String, String> record) {
-
+    @KafkaListener(topics = KafkaTopics.ALERT_TOPIC, groupId = "alert-processor-group")
+    public void onMessage(ConsumerRecord<String, String> record) {
+        String payload = record.value();
         try {
-            LogMessageDto dto = objectMapper.readValue(rawMessage, LogMessageDto.class);
-            log.debug("AlertListener received log: {}", dto);
-            alertService.onLog(dto);
+            AlertMessageDto dto = objectMapper.readValue(payload, AlertMessageDto.class);
+            log.info("Consumed alert from Kafka (topic={}, partition={}, offset={}): {}",
+                    record.topic(), record.partition(), record.offset(), dto);
+            alertService.handleAlert(dto);
         } catch (Exception ex) {
-            log.warn("Failed to parse log in alert-processor: {} | raw: {}", ex.getMessage(), rawMessage);
-            // Optionally persist invalid messages or forward to a DLQ
+            log.error("Failed to deserialize alert JSON from Kafka: {} - raw: {}", ex.getMessage(), payload, ex);
+            // Optionally persist raw payload to "alerts_errors" collection — not implemented here
         }
     }
 }
