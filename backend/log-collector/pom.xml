@@ -62,6 +62,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- enable configuration properties metadata (optional) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

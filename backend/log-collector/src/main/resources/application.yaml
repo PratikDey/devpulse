@@ -51,3 +51,20 @@ management:
     health:
       probes:
         enabled: true
+
+app:
+  alert:
+    keywords:
+      - "NullPointerException"
+      - "OutOfMemoryError"
+      - "Connection refused"
+    spike:
+      count: 10
+      windowSeconds: 30
+      cooldownSeconds: 60
+    consecutive:
+      count: 5
+      cooldownSeconds: 60
+    silence:
+      thresholdSeconds: 120
+      threshold-check-ms: 30000 # interval for scheduled check (ms)

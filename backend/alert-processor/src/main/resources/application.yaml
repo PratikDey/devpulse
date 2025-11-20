@@ -17,16 +17,41 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/devpulse_alerts
 
+# Optional: SMTP (configure for email notifications)
+#  mail:
+#   host: smtp.example.com
+#   port: 587
+#   username: test@example.mail.com
+#   password: test.password@example.com
+#   properties:
+#     mail:
+#       smtp:
+#         auth: true
+#         starttls:
+#           enable: true
+
+# Actuator + Prometheus for monitoring
 management:
   endpoints:
     web:
       exposure:
         include: "health,info,prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoint:
+    health:
+      probes:
+        enabled: true
 
-# Optional: SMTP (configure for email notifications)
-# spring:
-#   mail:
-#     host: smtp.example.com
-#     port: 587
-#     username: ...
-#     password: ...
+# Prometheus & metric rules config
+prometheus:
+  base-url: http://localhost:9090
+
+# Path to YAML rule file (relative to classpath or absolute)
+metrics:
+  rules-file: classpath:metrics-rules.yml
+
+# WebSocket allowed origin
+websocket:
+  allowed-origins: "*"

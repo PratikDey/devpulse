@@ -1,6 +1,7 @@
 package com.devpulse.logcollector.service;
 
 import com.devpulse.common.dto.LogMessageDto;
+import com.devpulse.logcollector.alert.AlertRuleEngine;
 import com.devpulse.logcollector.model.LogDocument;
 import com.devpulse.logcollector.repository.LogRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class LogPersistService {
 
     // Doesn't require @Autowired because constructor injection happening using Lombok's @RequiredArgsConstructor
     private final LogRepository logRepository;
+    private final AlertRuleEngine alertRuleEngine;
 
     /**
      * Saves a valid log message to MongoDB.
@@ -33,7 +35,7 @@ public class LogPersistService {
                 .timestamp(dto.getTimestamp())
                 .traceId(dto.getTraceId())
                 .build();
-
+        alertRuleEngine.onLog(dto);
         logRepository.save(doc);
     }
 }

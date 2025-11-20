@@ -1,0 +1,56 @@
+# Example metric rules
+rules:
+  - id: CPU_HIGH
+    name: "CPU usage high"
+    metric: "node_cpu_seconds_total_rate" # example name / you can map to PromQL
+    promql: '100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)'
+    threshold: 80.0
+    comparator: "GREATER_THAN"
+    durationSeconds: 30
+    severity: CRITICAL
+    description: "CPU usage > 80% for 30s"
+
+  - id: HTTP_LATENCY
+    name: "HTTP p95 latency"
+    promql: 'histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[2m])) by (le))'
+    threshold: 2.0
+    comparator: "GREATER_THAN"
+    durationSeconds: 60
+    severity: WARNING
+    description: "P95 latency > 2s for 60s"
+
+  - id: MEMORY_HIGH
+    name: "Memory usage high"
+    promql: '(sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes)) * 100'
+    threshold: 85.0
+    comparator: "GREATER_THAN"
+    durationSeconds: 60
+    severity: CRITICAL
+    description: "Memory usage > 85% for 60s"
+
+  - id: DISK_UTIL
+    name: "Disk usage high"
+    promql: '(node_filesystem_size_bytes{fstype!~"tmpfs|aufs|overlay"} - node_filesystem_free_bytes{fstype!~"tmpfs|aufs|overlay"}) / node_filesystem_size_bytes{fstype!~"tmpfs|aufs|overlay"} * 100'
+    threshold: 90.0
+    comparator: "GREATER_THAN"
+    durationSeconds: 300
+    severity: WARNING
+    description: "Disk usage > 90% for 5m"
+
+  - id: ERROR_RATE
+    name: "High HTTP 5xx rate"
+    promql: 'sum(rate(http_requests_total{status=~"5.."}[2m])) / sum(rate(http_requests_total[2m])) * 100'
+    threshold: 1.0
+    comparator: "GREATER_THAN"
+    durationSeconds: 120
+    severity: CRITICAL
+    description: "5xx error rate > 1% for 2m"
+
+  - id: POD_RESTARTS
+    name: "Pod restarts increased"
+    promql: 'increase(kube_pod_container_status_restarts_total[10m])'
+    threshold: 3.0
+    comparator: "GREATER_THAN"
+    durationSeconds: 600
+    severity: WARNING
+    description: "Container restarts > 3 in 10m"
