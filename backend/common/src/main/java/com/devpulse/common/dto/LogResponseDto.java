@@ -13,5 +13,6 @@ public class LogResponseDto {
     private String serviceName;
     private LogLevel level;
     private String message;
+    private String traceId;
     private Instant timestamp;
 }
