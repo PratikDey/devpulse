@@ -12,21 +12,26 @@ scrape_configs:
       - targets: ['kafka:9092']
 
   - job_name: 'producer-product'
+    metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['host.docker.internal:8081']
 
   - job_name: 'producer-order'
+    metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['host.docker.internal:8082']
 
   - job_name: 'log-collector'
+    metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['host.docker.internal:8083']
 
   - job_name: 'log-dashboard'
+    metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['host.docker.internal:8084']
 
   - job_name: 'alert-processor'
+    metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['host.docker.internal:8085']

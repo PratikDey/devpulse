@@ -1,23 +1,28 @@
-package com.devpulse.common.dto;
+package com.devpulse.logdashboard.model;
 
 import com.devpulse.common.enums.LogLevel;
 import lombok.*;
-import java.time.Instant;
-import java.util.Map;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
+
+/**
+ * MongoDB document for collected logs. Matches log-collector's persisted schema.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LogResponseDto {
+@Document(collection = "logs")
+public class LogDocument {
+
+    @Id
     private String id;
+
     private String serviceName;
     private LogLevel level;
     private String message;
-    private String traceId;
     private Instant timestamp;
-
     private String traceId;
-    private Map<String, Object> metadata;
-    private String sourceType;
 }
