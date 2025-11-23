@@ -28,7 +28,7 @@ public class MetricsPollingScheduler {
     @Value("${prometheus.base-url:http://localhost:9090}")
     private String prometheusBaseUrl;
 
-    @Value("${metrics.rules-file:classpath:metrics-rules.yml}")
+    @Value("${metrics.rules-file:classpath:metrics-rules.yaml}")
     private String rulesFile;
 
     private List<MetricRule> rules = Collections.emptyList();

@@ -6,63 +6,97 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 
+/**
+ * PrometheusClient
+ *
+ * Executes synchronous "instant" PromQL queries safely using WebClient.
+ * Supports all PromQL characters ({}[]()"'= etc.), avoids URI creation errors,
+ * and follows Prometheus HTTP API format exactly.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class PrometheusClient {
 
     private final ObjectMapper mapper;
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
     /**
-     * Execute a synchronous "instant" Prometheus query and return the numeric value of the first result.
+     * Execute a Prometheus instant query and return the first numeric result.
      *
-     * Behavior:
-     *  - Builds a URL: {baseUrl}/api/v1/query?query={URLEncoded(promql)}.
-     *  - Uses the injected WebClient and blocks on the response (returns null on timeout/error).
-     *  - Expects Prometheus JSON shape: { "status": "success", "data": { "result": [ { "value": [ <ts>, "<value>" ] }, ... ] } }.
-     *  - Returns the parsed double value from the first result element, or null if no result / non-success / parse error.
-     *
-     * Caveats:
-     *  - Uses blocking .block() on a reactive WebClient. If high throughput is expected, switch to non-blocking/reactive handling
-     *    or run calls in a bounded thread pool.
-     *
-     * @param baseUrl base Prometheus URL (e.g. http://localhost:9090)
-     * @param promql  PromQL expression to execute
-     * @return parsed numeric value of the first result, or null if unavailable / on error
+     * @param baseUrl e.g. http://localhost:9090
+     * @param promql  raw PromQL expression (NOT encoded)
+     * @return Double result or null
      */
-
     public Double queryInstant(String baseUrl, String promql) {
+        WebClient webClient = webClientBuilder.build();
         try {
-            String encoded = URLEncoder.encode(promql, StandardCharsets.UTF_8);
-            String url = baseUrl.endsWith("/") ? baseUrl + "api/v1/query?query=" + encoded
-                    : baseUrl + "/api/v1/query?query=" + encoded;
+            if (promql == null || promql.isBlank()) {
+                log.error("PromQL expression cannot be empty.");
+                return null;
+            }
 
+            // Normalize base URL to remove trailing slash
+            String base = baseUrl.endsWith("/")
+                    ? baseUrl.substring(0, baseUrl.length() - 1)
+                    : baseUrl;
+
+            // Build safe URI (promql encoded ONLY where needed)
+            String uriString = UriComponentsBuilder
+                    .fromUriString(base + "/api/v1/query")
+                    .queryParam("query", promql)
+                    .build(true)  // <-- critical: allow encoded characters safely
+                    .toUriString();
+
+            log.debug("Prometheus final URI: {}", uriString);
+
+            URI uri = URI.create(uriString);
+
+            // Perform GET
             String response = webClient.get()
-                    .uri(url)
+                    .uri(uri)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
 
-            if (response == null) return null;
-            JsonNode root = mapper.readTree(response);
-            if (!"success".equalsIgnoreCase(root.path("status").asText())) {
-                log.debug("Prometheus query non-success: {}", response);
+            if (response == null) {
+                log.error("Prometheus returned null response for query: {}", promql);
                 return null;
             }
-            JsonNode result = root.path("data").path("result");
-            if (!result.isArray() || result.isEmpty()) return null;
-            JsonNode value = result.get(0).path("value");
-            if (value.isArray() && value.size() > 1) {
-                return Double.parseDouble(value.get(1).asText());
+
+            JsonNode root = mapper.readTree(response);
+
+            if (!"success".equalsIgnoreCase(root.path("status").asText())) {
+                log.error("Prometheus returned non-success response: {}", response);
+                return null;
             }
+
+            JsonNode resultArray = root.path("data").path("result");
+            if (!resultArray.isArray() || resultArray.isEmpty()) {
+                log.debug("Prometheus returned empty result for promql={}", promql);
+                return null;
+            }
+
+            JsonNode valueArray = resultArray.get(0).path("value");
+            if (valueArray.isArray() && valueArray.size() >= 2) {
+                String numeric = valueArray.get(1).asText();
+                try {
+                    return Double.parseDouble(numeric);
+                } catch (NumberFormatException ex) {
+                    log.error("Failed to parse Prometheus value '{}'", numeric);
+                }
+            }
+
+            log.error("Unexpected Prometheus result format: {}", resultArray);
+            return null;
+
         } catch (Exception ex) {
-            log.error("Prometheus instant query failed for promql={}", promql, ex);
+            log.error("Prometheus instant query failed. promql={}", promql, ex);
+            return null;
         }
-        return null;
     }
 }

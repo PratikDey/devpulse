@@ -18,17 +18,21 @@ spring:
       uri: mongodb://localhost:27017/devpulse_alerts
 
 # Optional: SMTP (configure for email notifications)
-#  mail:
-#   host: smtp.example.com
-#   port: 587
-#   username: test@example.mail.com
-#   password: test.password@example.com
-#   properties:
-#     mail:
-#       smtp:
-#         auth: true
-#         starttls:
-#           enable: true
+  mail:
+    host: smtp.freesmtpservers.com
+    port: 25
+    username: testing1234@freesmtpservers.com
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+#            required: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
 
 # Actuator + Prometheus for monitoring
 management:
@@ -50,7 +54,7 @@ prometheus:
 
 # Path to YAML rule file (relative to classpath or absolute)
 metrics:
-  rules-file: classpath:metrics-rules.yml
+  rules-file: classpath:metrics-rules.yaml
 
 # WebSocket allowed origin
 websocket:

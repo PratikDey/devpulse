@@ -1,56 +1,100 @@
-# Example metric rules
 rules:
-  - id: CPU_HIGH
-    name: "CPU usage high"
-    metric: "node_cpu_seconds_total_rate" # example name / you can map to PromQL
-    promql: '100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)'
-    threshold: 80.0
-    comparator: "GREATER_THAN"
+
+  # -------------------------------------------------------------------
+  # 1. CPU Usage Alert
+  # -------------------------------------------------------------------
+  - id: cpu_high
+    name: "High CPU usage"
+    promql: process_cpu_usage * 100
+    threshold: 80            # More than 80%
+    comparator: GREATER_THAN
     durationSeconds: 30
     severity: CRITICAL
-    description: "CPU usage > 80% for 30s"
+    description: "JVM CPU usage has crossed 80%."
 
-  - id: HTTP_LATENCY
-    name: "HTTP p95 latency"
-    promql: 'histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[2m])) by (le))'
-    threshold: 2.0
-    comparator: "GREATER_THAN"
+  # -------------------------------------------------------------------
+  # 2. Memory Usage Alert
+  # -------------------------------------------------------------------
+  - id: memory_high
+    name: "High memory usage"
+    promql: (jvm_memory_used_bytes / jvm_memory_max_bytes) * 100
+    threshold: 75            # More than 75% heap
+    comparator: GREATER_THAN
     durationSeconds: 60
     severity: WARNING
-    description: "P95 latency > 2s for 60s"
+    description: "JVM memory usage above 75%."
 
-  - id: MEMORY_HIGH
-    name: "Memory usage high"
-    promql: '(sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes)) * 100'
-    threshold: 85.0
-    comparator: "GREATER_THAN"
+  # -------------------------------------------------------------------
+  # 3. High HTTP 5xx Errors
+  # (your Spring Boot services expose these metrics)
+  # -------------------------------------------------------------------
+  - id: http_errors_high
+    name: "High error rate (5xx)"
+    promql: increase(http_server_requests_seconds_count{outcome="SERVER_ERROR"}[1m])
+    threshold: 5             # More than 5 errors/min
+    comparator: GREATER_THAN
     durationSeconds: 60
     severity: CRITICAL
-    description: "Memory usage > 85% for 60s"
+    description: "High number of HTTP 5xx errors."
 
-  - id: DISK_UTIL
-    name: "Disk usage high"
-    promql: '(node_filesystem_size_bytes{fstype!~"tmpfs|aufs|overlay"} - node_filesystem_free_bytes{fstype!~"tmpfs|aufs|overlay"}) / node_filesystem_size_bytes{fstype!~"tmpfs|aufs|overlay"} * 100'
-    threshold: 90.0
-    comparator: "GREATER_THAN"
-    durationSeconds: 300
+  # -------------------------------------------------------------------
+  # 4. High Request Latency (slow API)
+  # -------------------------------------------------------------------
+  - id: slow_requests
+    name: "Slow API response time"
+    promql: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[1m])) by (le))
+    threshold: 1.5           # 95th percentile > 1.5 seconds
+    comparator: GREATER_THAN
+    durationSeconds: 60
     severity: WARNING
-    description: "Disk usage > 90% for 5m"
+    description: "95th percentile response time is slow."
 
-  - id: ERROR_RATE
-    name: "High HTTP 5xx rate"
-    promql: 'sum(rate(http_requests_total{status=~"5.."}[2m])) / sum(rate(http_requests_total[2m])) * 100'
-    threshold: 1.0
-    comparator: "GREATER_THAN"
-    durationSeconds: 120
+  # -------------------------------------------------------------------
+  # 5. GC Pause Duration Alert
+  # -------------------------------------------------------------------
+  - id: gc_pause_high
+    name: "High GC pause duration"
+    promql: increase(jvm_gc_pause_seconds_sum[5m])
+    threshold: 2.0           # more than 2 seconds total
+    comparator: GREATER_THAN
+    durationSeconds: 60
+    severity: WARNING
+    description: "Garbage collection pauses are too long."
+
+  # -------------------------------------------------------------------
+  # 6. Logback ERROR Events spiking
+  # -------------------------------------------------------------------
+  - id: log_errors_spike
+    name: "Spike in ERROR logs"
+    promql: increase(logback_events_total{level="error"}[1m])
+    threshold: 10            # 10 errors in last minute
+    comparator: GREATER_THAN
+    durationSeconds: 30
     severity: CRITICAL
-    description: "5xx error rate > 1% for 2m"
+    description: "Spike in ERROR logs detected."
 
-  - id: POD_RESTARTS
-    name: "Pod restarts increased"
-    promql: 'increase(kube_pod_container_status_restarts_total[10m])'
-    threshold: 3.0
-    comparator: "GREATER_THAN"
-    durationSeconds: 600
+  # -------------------------------------------------------------------
+  # 7. Kafka Consumer Lag Alert (optional – works only if exporter installed)
+  # If lag metric missing, this rule simply won't fire.
+  # -------------------------------------------------------------------
+  - id: kafka_lag_high
+    name: "Kafka consumer lag high"
+    promql: kafka_consumergroup_lag
+    threshold: 50            # lag > 50
+    comparator: GREATER_THAN
+    durationSeconds: 45
+    severity: CRITICAL
+    description: "Kafka consumer lag is too high."
+
+  # -------------------------------------------------------------------
+  # 8. Thread count explosion (common JVM issue)
+  # -------------------------------------------------------------------
+  - id: threads_high
+    name: "Too many JVM threads"
+    promql: jvm_threads_live
+    threshold: 300           # more than 300 threads
+    comparator: GREATER_THAN
+    durationSeconds: 60
     severity: WARNING
-    description: "Container restarts > 3 in 10m"
+    description: "Thread count unusually high."
+
