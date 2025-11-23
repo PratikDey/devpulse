@@ -12,6 +12,8 @@ import java.time.Instant;
 @Builder
 public class OrderDto {
     private String orderId;
+    @NotBlank(message = "name is required")
+    private String name;
     @NotBlank(message = "productId is required")
     private String productId;
     @Min(value = 1, message = "quantity must be >= 1")

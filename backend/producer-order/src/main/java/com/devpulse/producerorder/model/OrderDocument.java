@@ -18,6 +18,7 @@ import java.time.Instant;
 public class OrderDocument {
     @Id
     private String orderId;
+    private String name;
     private String productId;
     private int quantity;
     private double price;
