@@ -16,8 +16,6 @@ public class LogResponseDto {
     private String message;
     private String traceId;
     private Instant timestamp;
-
-    private String traceId;
     private Map<String, Object> metadata;
     private String sourceType;
 }
