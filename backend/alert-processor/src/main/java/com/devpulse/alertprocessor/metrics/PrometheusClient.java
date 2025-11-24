@@ -45,16 +45,15 @@ public class PrometheusClient {
                     ? baseUrl.substring(0, baseUrl.length() - 1)
                     : baseUrl;
 
-            // Build safe URI (promql encoded ONLY where needed)
-            String uriString = UriComponentsBuilder
+            // Build safe URI (promql encoded automatically)
+            URI uri = UriComponentsBuilder
                     .fromUriString(base + "/api/v1/query")
                     .queryParam("query", promql)
-                    .build(true)  // <-- critical: allow encoded characters safely
-                    .toUriString();
+                    .encode()
+                    .build()
+                    .toUri();
 
-            log.debug("Prometheus final URI: {}", uriString);
-
-            URI uri = URI.create(uriString);
+            log.debug("Prometheus final URI: {}", uri);
 
             // Perform GET
             String response = webClient.get()
