@@ -1,26 +1,48 @@
 import React, { useState, useEffect } from 'react';
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
 
 /**
  * AlertToast Component
  * Toast notification system for alerts
+ * Connects to backend WebSocket to receive real-time alerts
  */
 function AlertToast() {
     const [toasts, setToasts] = useState([]);
 
-    // Simulate alert notifications (in real app, this would come from WebSocket/SSE)
     useEffect(() => {
-        // This is a placeholder - in production, you'd connect to your alert system
-        const exampleToast = {
-            id: Date.now(),
-            type: 'info',
-            title: 'Alert System',
-            message: 'Alert notifications will appear here when triggered',
-        };
+        // Connect to WebSocket
+        const socket = new SockJS('http://localhost:8085/alert-ws');
+        const stompClient = Stomp.over(socket);
 
-        // Show example toast on mount
-        setTimeout(() => {
-            addToast(exampleToast);
-        }, 2000);
+        // Disable debug logs for cleaner console
+        stompClient.debug = () => { };
+
+        stompClient.connect({}, (frame) => {
+            console.log('Connected to Alert WebSocket: ' + frame);
+
+            stompClient.subscribe('/topic/alerts', (message) => {
+                try {
+                    const alert = JSON.parse(message.body);
+                    addToast({
+                        id: alert.id || Date.now(),
+                        type: 'error', // Alerts are usually critical/error
+                        title: `Alert: ${alert.ruleName || 'System Alert'}`,
+                        message: alert.message || JSON.stringify(alert),
+                    });
+                } catch (e) {
+                    console.error("Failed to parse alert message", e);
+                }
+            });
+        }, (error) => {
+            console.error('WebSocket connection error:', error);
+        });
+
+        return () => {
+            if (stompClient && stompClient.connected) {
+                stompClient.disconnect();
+            }
+        };
     }, []);
 
     function addToast(toast) {

@@ -9,7 +9,7 @@ This repository contains a monorepo for an end-to-end demo:
 - Log Dashboard (REST APIs + WebSocket for UI)
 - Alert Processor (evaluates alert rules, sends toast + email)
 - Metrics pipeline (Spring Actuator → Prometheus → Grafana)
-- React frontend (dashboard + charts + toast alerts)
+- React frontend (dashboard + charts + toast alerts + Grafana metrics)
 
 > Goal: A small, extensible observability stack you can run locally and extend easily.
 

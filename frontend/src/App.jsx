@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react
 import Dashboard from "./components/Dashboard";
 import LiveLogStream from "./components/LiveLogStream";
 import OrderManagement from "./components/OrderManagement";
+import ProductManagement from './components/ProductManagement';
+import GrafanaDashboard from "./components/GrafanaDashboard";
 import AlertToast from "./components/AlertToast";
 
 function AppLayout() {
@@ -50,6 +52,24 @@ function AppLayout() {
                 <span>Orders</span>
               </Link>
             </li>
+            <li className="nav-item">
+              <Link
+                to="/products"
+                className={`nav-link ${isActive('/products') ? 'active' : ''}`}
+              >
+                <span>🏷️</span>
+                <span>Products</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/metrics"
+                className={`nav-link ${isActive('/metrics') ? 'active' : ''}`}
+              >
+                <span>📈</span>
+                <span>Metrics</span>
+              </Link>
+            </li>
           </ul>
         </nav>
 
@@ -69,6 +89,8 @@ function AppLayout() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/live" element={<LiveLogStream />} />
           <Route path="/orders" element={<OrderManagement />} />
+          <Route path="/products" element={<ProductManagement />} />
+          <Route path="/metrics" element={<GrafanaDashboard />} />
         </Routes>
       </main>
 

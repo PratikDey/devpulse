@@ -25,8 +25,18 @@ export default defineConfig({
     port: 5173,
     open: true,
     proxy: {
-      '/api': {
+      '/api/products': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api/orders': {
         target: 'http://localhost:8082',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api/logs': {
+        target: 'http://localhost:8084',
         changeOrigin: true,
         secure: false,
       }
@@ -36,5 +46,8 @@ export default defineConfig({
     target: 'esnext',
     sourcemap: true
   },
-  esbuild: false // ensures Rolldown (not esbuild) handles bundling
+  esbuild: false, // ensures Rolldown (not esbuild) handles bundling
+  define: {
+    global: 'window',
+  }
 });
