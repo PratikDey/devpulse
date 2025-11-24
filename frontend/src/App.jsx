@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import LiveLogStream from "./components/LiveLogStream";
+import OrderManagement from "./components/OrderManagement";
 import AlertToast from "./components/AlertToast";
 
 function AppLayout() {
@@ -40,6 +41,15 @@ function AppLayout() {
                 <span>Live Stream</span>
               </Link>
             </li>
+            <li className="nav-item">
+              <Link
+                to="/orders"
+                className={`nav-link ${isActive('/orders') ? 'active' : ''}`}
+              >
+                <span>📦</span>
+                <span>Orders</span>
+              </Link>
+            </li>
           </ul>
         </nav>
 
@@ -58,6 +68,7 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/live" element={<LiveLogStream />} />
+          <Route path="/orders" element={<OrderManagement />} />
         </Routes>
       </main>
 

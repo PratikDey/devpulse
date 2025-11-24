@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
  * - Emits structured logs to Kafka via LogProducer after each important event.
  *
  * The service keeps business data and telemetry (logs) separated:
- *  - Orders -> Mongo "orders" collection
- *  - Logs   -> Kafka "devpulse-logs" consumed by log-collector
+ * - Orders -> Mongo "orders" collection
+ * - Logs -> Kafka "devpulse-logs" consumed by log-collector
  */
 @Service
 @RequiredArgsConstructor
@@ -41,9 +41,11 @@ public class OrderService {
     /* HELPERS ------------------------------------------------------------- */
 
     private OrderDto toDto(OrderDocument doc) {
-        if (doc == null) return null;
+        if (doc == null)
+            return null;
         return OrderDto.builder()
                 .orderId(doc.getOrderId())
+                .name(doc.getName())
                 .productId(doc.getProductId())
                 .quantity(doc.getQuantity())
                 .price(doc.getPrice())
@@ -54,13 +56,13 @@ public class OrderService {
     private OrderDocument toDocument(OrderDto dto) {
         return OrderDocument.builder()
                 .orderId(dto.getOrderId())
+                .name(dto.getName())
                 .productId(dto.getProductId())
                 .quantity(dto.getQuantity())
                 .price(dto.getPrice())
                 .orderDate(dto.getOrderDate())
                 .build();
     }
-
 
     /**
      * Create and persist an order. Also emits an INFO log to Kafka.
@@ -72,7 +74,8 @@ public class OrderService {
         // Ensure orderId exists
         String orderId = dto.getOrderId() != null ? dto.getOrderId() : UUID.randomUUID().toString();
         dto.setOrderId(orderId);
-        if (dto.getOrderDate() == null) dto.setOrderDate(Instant.now());
+        if (dto.getOrderDate() == null)
+            dto.setOrderDate(Instant.now());
         // Save business entity
         OrderDocument doc = toDocument(dto);
 
@@ -113,7 +116,9 @@ public class OrderService {
         }
 
         OrderDocument existing = existingOpt.get();
-        // Apply updates (only update provided fields; here we overwrite fields for simplicity)
+        // Apply updates (only update provided fields; here we overwrite fields for
+        // simplicity)
+        existing.setName(update.getName() != null ? update.getName() : existing.getName());
         existing.setProductId(update.getProductId() != null ? update.getProductId() : existing.getProductId());
         existing.setQuantity(update.getQuantity() != 0 ? update.getQuantity() : existing.getQuantity());
         existing.setPrice(update.getPrice() != 0.0 ? update.getPrice() : existing.getPrice());
