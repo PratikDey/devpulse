@@ -35,7 +35,9 @@ gnome-terminal --tab --title="Log Dashboard (8084)" -- bash -c "cd backend/log-d
 gnome-terminal --tab --title="Alert Processor (8085)" -- bash -c "cd backend/alert-processor; mvn spring-boot:run -DskipTests; exec bash"
 
 # 3. Launch Frontend
-echo "[3/3] Launching Frontend..."
+echo "[3/3] Waiting 15s for backend to initialize..."
+sleep 15
+echo "Launching Frontend..."
 gnome-terminal --tab --title="Frontend (Vite)" -- bash -c "cd frontend; echo 'Installing dependencies...'; npm install; echo 'Starting Vite...'; npm run dev; exec bash"
 
 echo "=========================================="
