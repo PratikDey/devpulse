@@ -2,6 +2,9 @@
 
 ## Prerequisites
 *   **Docker** & **Docker Compose** (v2+)
+*   **Java 17+** (optional, for local jar running)
+*   **Maven 3.8+** (optional, for local build)
+*   **Node.js 22.12+** (optional, for local frontend dev)
 
 ## Environment Configuration
 
