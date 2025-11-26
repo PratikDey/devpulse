@@ -11,8 +11,10 @@ import config from '@config';
 function AlertToast() {
     const [toasts, setToasts] = useState([]);
 
+    const lastToastRef = React.useRef({ message: '', time: 0 });
+
     useEffect(() => {
-        // Connect to WebSocket
+        let isMounted = true;
         const socket = new SockJS(`${config.api.alerts}/alert-ws`);
         const stompClient = Stomp.over(socket);
 
@@ -20,9 +22,14 @@ function AlertToast() {
         stompClient.debug = () => { };
 
         stompClient.connect({}, (frame) => {
+            if (!isMounted) {
+                stompClient.disconnect();
+                return;
+            }
             console.log('Connected to Alert WebSocket: ' + frame);
 
             stompClient.subscribe('/topic/alerts', (message) => {
+                if (!isMounted) return;
                 try {
                     const alert = JSON.parse(message.body);
                     addToast({
@@ -40,6 +47,7 @@ function AlertToast() {
         });
 
         return () => {
+            isMounted = false;
             if (stompClient && stompClient.connected) {
                 stompClient.disconnect();
             }
@@ -47,16 +55,34 @@ function AlertToast() {
     }, []);
 
     function addToast(toast) {
-        setToasts(prevToasts => [...prevToasts, toast]);
+        // Simple deduplication: ignore if same message received within 500ms
+        const now = Date.now();
+        if (toast.message === lastToastRef.current.message && (now - lastToastRef.current.time) < 500) {
+            return;
+        }
+        lastToastRef.current = { message: toast.message, time: now };
 
-        // Auto-remove after 5 seconds
+        setToasts(prevToasts => [...prevToasts, { ...toast, isExiting: false }]);
+
+        // Auto-remove after 10 seconds
         setTimeout(() => {
-            removeToast(toast.id);
-        }, 5000);
+            triggerRemoveToast(toast.id);
+        }, 10000);
+    }
+
+    function triggerRemoveToast(id) {
+        setToasts(prevToasts => prevToasts.map(t =>
+            t.id === id ? { ...t, isExiting: true } : t
+        ));
+
+        // Wait for animation to finish before actual removal
+        setTimeout(() => {
+            setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id));
+        }, 300);
     }
 
     function removeToast(id) {
-        setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id));
+        triggerRemoveToast(id);
     }
 
     if (toasts.length === 0) {
@@ -68,9 +94,10 @@ function AlertToast() {
             {toasts.map(toast => (
                 <div
                     key={toast.id}
-                    className={`toast toast-${toast.type}`}
+                    className={`toast toast-${toast.type} ${toast.isExiting ? 'toast-exit' : 'toast-enter'}`}
+                    style={{ position: 'relative', overflow: 'hidden' }}
                 >
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, zIndex: 1 }}>
                         <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>
                             {toast.title}
                         </div>
@@ -92,10 +119,12 @@ function AlertToast() {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
+                            zIndex: 1
                         }}
                     >
                         ×
                     </button>
+                    <div className="toast-progress"></div>
                 </div>
             ))}
         </div>

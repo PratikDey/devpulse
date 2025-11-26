@@ -1,4 +1,5 @@
 import React from 'react';
+import config from '@config';
 
 const GrafanaDashboard = () => {
     return (
@@ -9,7 +10,7 @@ const GrafanaDashboard = () => {
             </div>
             <div className="flex-1 bg-[#181b1f]" style={{ height: '80vh' }}> {/* Grafana dark theme bg color match */}
                 <iframe
-                    src="http://localhost:3000/d/devpulse-dashboard/devpulse-dashboard?theme=dark&kiosk"
+                    src={config.grafanaUrl}
                     width="100%"
                     height="100%"
                     className="border-0"

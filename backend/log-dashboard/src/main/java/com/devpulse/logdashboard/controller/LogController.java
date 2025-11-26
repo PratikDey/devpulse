@@ -1,6 +1,7 @@
 package com.devpulse.logdashboard.controller;
 
 import com.devpulse.common.dto.ApiResponse;
+import com.devpulse.common.dto.LogMessageDto;
 import com.devpulse.common.dto.LogResponseDto;
 import com.devpulse.logdashboard.service.LogQueryService;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +19,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * LogController
  *
- * - GET /api/logs?page=&size=         => paged logs
- * - GET /api/logs/service/{service}   => logs by service
- * - GET /api/logs/level/{level}      => logs by level (INFO/WARN/ERROR/DEBUG)
- * - GET /api/logs/recent             => top 100 recent logs
- * - GET /api/logs/stream             => Server-Sent Events (SSE) real-time stream of recent logs
+ * - GET /api/logs?page=&size= => paged logs
+ * - GET /api/logs/service/{service} => logs by service
+ * - GET /api/logs/level/{level} => logs by level (INFO/WARN/ERROR/DEBUG)
+ * - GET /api/logs/recent => top 100 recent logs
+ * - GET /api/logs/stream => Server-Sent Events (SSE) real-time stream of recent
+ * logs
  *
  * SSE approach keeps client simple (no STOMP).
  */
@@ -78,8 +80,10 @@ public class LogController {
 
     /**
      * SSE streaming endpoint — clients connect and receive pushed events.
-     * Implementation: log-collector (or alert-processor) can POST to an internal endpoint to broadcast new logs,
-     * or we can wire direct DB tailable cursor later. For now log-collector can POST to /api/logs/push (below).
+     * Implementation: log-collector (or alert-processor) can POST to an internal
+     * endpoint to broadcast new logs,
+     * or we can wire direct DB tailable cursor later. For now log-collector can
+     * POST to /api/logs/push (below).
      */
     @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream() {
@@ -89,19 +93,37 @@ public class LogController {
         emitter.onTimeout(() -> emitters.remove(emitter));
         emitter.onCompletion(() -> emitters.remove(emitter));
 
+        // Send initial event to establish connection immediately
+        try {
+            emitter.send(SseEmitter.event().name("init").data("Connected"));
+        } catch (IOException e) {
+            emitters.remove(emitter);
+        }
+
         return emitter;
     }
 
     /**
-     * Internal push endpoint: log-collector (or producer) can call this to push a newly persisted log to all SSE clients.
+     * Internal push endpoint: log-collector (or producer) can call this to push a
+     * newly persisted log to all SSE clients.
      * Protect this endpoint later (internal network or auth).
      */
     @PostMapping("/push")
-    public ResponseEntity<ApiResponse<?>> push(@RequestBody LogResponseDto dto) {
+    public ResponseEntity<ApiResponse<?>> push(@RequestBody LogMessageDto dto) {
+        // Convert to ResponseDto for frontend (add ID)
+        LogResponseDto responseDto = LogResponseDto.builder()
+                .id(java.util.UUID.randomUUID().toString())
+                .serviceName(dto.getServiceName())
+                .level(dto.getLevel())
+                .message(dto.getMessage())
+                .traceId(dto.getTraceId())
+                .timestamp(dto.getTimestamp())
+                .build();
+
         // Broadcast to all active emitters
         for (SseEmitter emitter : emitters) {
             try {
-                emitter.send(SseEmitter.event().name("log").data(dto));
+                emitter.send(SseEmitter.event().name("log").data(responseDto));
             } catch (IOException e) {
                 emitters.remove(emitter);
             }

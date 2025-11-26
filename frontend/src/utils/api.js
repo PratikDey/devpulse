@@ -84,6 +84,17 @@ export function createLogStream() {
 }
 
 // ================================================
+// Alert API
+// ================================================
+
+/**
+ * Fetch all alerts
+ */
+export async function fetchAlerts() {
+    return apiFetch(config.api.alerts, '/api/alerts');
+}
+
+// ================================================
 // Utility Functions
 // ================================================
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createLogStream, formatTimestamp, getLogLevelClass } from '../utils/api';
+import { createLogStream, formatTimestamp, getLogLevelClass } from '@utils/api';
 
 /**
  * LiveLogStream Component
