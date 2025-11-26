@@ -14,22 +14,24 @@ import org.springframework.stereotype.Component;
 /**
  * LogKafkaListener
  *
- * This class listens to the Kafka topic "devpulse-logs" and processes log messages.
+ * This class listens to the Kafka topic "devpulse-logs" and processes log
+ * messages.
  * It supports two scenarios:
  *
  * 1. VALID LOG MESSAGE (Valid JSON → LogMessageDto):
- *       - Persist into MongoDB (logs collection)
+ * - Persist into MongoDB (logs collection)
  *
  * 2. INVALID LOG MESSAGE (Invalid JSON, corrupted, wrong schema):
- *       - We detect invalid payload and store it in a separate MongoDB collection (logs_errors)
+ * - We detect invalid payload and store it in a separate MongoDB collection
+ * (logs_errors)
  *
  * This design ensures fault-tolerance and avoids infinite retry loops.
  *
  * We receive ALL Kafka messages as RAW STRING.
  * Reason:
- *  - Prevent Jackson failures inside Kafka listener container.
- *  - Full control over error-handling.
- *  - Ability to store invalid logs separately.
+ * - Prevent Jackson failures inside Kafka listener container.
+ * - Full control over error-handling.
+ * - Ability to store invalid logs separately.
  *
  * Responsibilities:
  * 1. Try parse string → LogMessageDto
@@ -42,9 +44,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LogKafkaListener {
 
-    // Doesn't require @Autowired because constructor injection happening using Lombok's @RequiredArgsConstructor
+    // Doesn't require @Autowired because constructor injection happening using
+    // Lombok's @RequiredArgsConstructor
     private final LogPersistService persistService;
     private final InvalidLogService invalidLogService;
+    private final com.devpulse.logcollector.service.DashboardPushService pushService;
     private final ObjectMapper objectMapper; // Spring Boot's mapper -> no manual injection
 
     /**
@@ -65,6 +69,9 @@ public class LogKafkaListener {
             log.info("Received VALID log from Kafka: {}", dto);
             persistService.saveLog(dto);
 
+            // Push to dashboard for live streaming
+            pushService.pushLog(dto);
+
         } catch (Exception ex) {
 
             // Invalid → persist raw + metadata
@@ -74,8 +81,7 @@ public class LogKafkaListener {
                     record.topic(),
                     record.partition(),
                     record.offset(),
-                    rawMessage
-            );
+                    rawMessage);
         }
     }
 }

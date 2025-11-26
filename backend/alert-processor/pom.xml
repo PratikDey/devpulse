@@ -109,6 +109,10 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
             <!-- compiler plugin - keep parameters if you set globally in parent -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

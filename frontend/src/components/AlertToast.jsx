@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
+import config from '@config';
 
 /**
  * AlertToast Component
@@ -12,7 +13,7 @@ function AlertToast() {
 
     useEffect(() => {
         // Connect to WebSocket
-        const socket = new SockJS('http://localhost:8085/alert-ws');
+        const socket = new SockJS(`${config.api.alerts}/alert-ws`);
         const stompClient = Stomp.over(socket);
 
         // Disable debug logs for cleaner console

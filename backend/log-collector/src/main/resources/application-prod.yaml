@@ -1,0 +1,73 @@
+server:
+  port: ${COLLECTOR_PORT:8083}
+
+spring:
+  application:
+    name: log-collector
+
+  # Kafka consumer configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+
+    consumer:
+      group-id: log-collector-group
+      auto-offset-reset: earliest # Start from the earliest offset if no committed offsets exist
+
+      ## We use ErrorHandlingDeserializer to prevent consumer crashes on invalid JSON
+      # key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      # value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+      # IMPORTANT: receive RAW string messages
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+      properties:
+
+        # Accept all packages (safe because consumers are controlled)
+        spring.json.trusted.packages: "*"
+
+        ## Automatically bind JSON to LogMessageDto
+        # spring.json.value.default.type: com.devpulse.common.dto.LogMessageDto
+
+        ## Delegate actual deserialization to String + JSON deserializer
+        # spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        # spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+  # MongoDB configuration
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://localhost:27017/devpulse_logs}
+
+# Actuator + Prometheus for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+app:
+  # URL to push logs to dashboard (for live streaming)
+  dashboard-url: ${LOG_DASHBOARD_URL:http://localhost:8084}
+  
+  alert:
+    keywords:
+      - "NullPointerException"
+      - "OutOfMemoryError"
+      - "Connection refused"
+    spike:
+      count: 10
+      windowSeconds: 30
+      cooldownSeconds: 60
+    consecutive:
+      count: 5
+      cooldownSeconds: 60
+    silence:
+      thresholdSeconds: 120
+      threshold-check-ms: 30000 # interval for scheduled check (ms)
