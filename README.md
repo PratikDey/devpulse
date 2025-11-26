@@ -1,37 +1,58 @@
 # DevPulse
 
-DevPulse — a lightweight open-source developer observability platform (logs + metrics + alerts).
+**DevPulse** is a lightweight, open-source developer observability platform. It demonstrates a complete end-to-end stack for logging, monitoring, and alerting using modern technologies.
 
-This repository contains a monorepo for an end-to-end demo:
-- Producers (dummy services) that generate logs
-- Kafka as the streaming bus
-- Log Collector (consumes logs and stores in MongoDB)
-- Log Dashboard (REST APIs + WebSocket for UI)
-- Alert Processor (evaluates alert rules, sends toast + email)
-- Metrics pipeline (Spring Actuator → Prometheus → Grafana)
-- React frontend (dashboard + charts + toast alerts + Grafana metrics)
+## 🚀 Features
 
-> Goal: A small, extensible observability stack you can run locally and extend easily.
+*   **Live Log Streaming**: Real-time log viewing via Server-Sent Events (SSE).
+*   **Distributed Tracing**: Correlate logs across microservices.
+*   **Alerting**: Log-based and metrics-based alerting via **Toast Notifications** and **Email**.
+*   **Metrics**: Integrated Prometheus & Grafana dashboards.
+*   **Microservices**: Spring Boot architecture with Kafka messaging.
 
----
+## 📚 Documentation
 
-## Quick links
-- `/backend` — all backend modules (common, producers, collector, dashboard, alert-processor)
-- `/frontend` — React app
-- `/docs` — architecture diagrams, API contracts, alert rules, roadmap
-- `docker-compose.yml` — brings up Kafka, Mongo, Prometheus, Grafana, and services
+Detailed documentation is available in the `documentation/` folder:
 
----
+*   [**Architecture**](documentation/architecture.md): System design, services, and data flow.
+*   [**Deployment Guide**](documentation/deployment.md): How to run locally or with Docker.
+*   [**API Reference**](documentation/api.md): REST API endpoints.
+*   [**Troubleshooting**](documentation/troubleshooting.md): Common issues and fixes.
 
-## Prerequisites (local dev)
-- Docker & Docker Compose (docker-compose v1.29+ or v2)
-- Java 17+ & Maven (if you want to run apps locally instead of using Docker)
-- Node.js (for frontend dev)
+## 🛠️ Tech Stack
 
----
+*   **Backend**: Java 17, Spring Boot 3.5.7, Spring Cloud 2025.0.0
+*   **Frontend**: React, Vite, TailwindCSS
+*   **Messaging**: Apache Kafka
+*   **Database**: MongoDB
+*   **Monitoring**: Prometheus, Grafana
 
-## Quick start (one-liner)
-From repo root:
-```bash
-# builds images for services (uses Dockerfiles in module folders)
-docker-compose up --build
+## ⚡ Quick Start
+
+1.  **Start Infrastructure** (Kafka, Mongo, Prometheus, Grafana):
+    ```bash
+    docker compose up -d
+    ```
+
+2.  **Start Services**:
+    ```bash
+    ./deploy.sh
+    ```
+
+3.  **Start Frontend**:
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+
+4.  **Visit**: `http://localhost:5173`
+
+## 🤝 Contributors
+
+*   **Pratik Dey** - [@PratikDey](https://github.com/PratikDey)
+*   **Pratyush Kumar** - [@MightyThinker](https://github.com/MightyThinker)
+
+## 📜 License
+
+MIT
