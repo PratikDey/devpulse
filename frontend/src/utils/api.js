@@ -132,7 +132,9 @@ export function getLogLevelClass(level) {
         DEBUG: 'badge-debug',
         INFO: 'badge-info',
         WARN: 'badge-warn',
+        WARNING: 'badge-warn',
         ERROR: 'badge-error',
+        CRITICAL: 'badge-error',
     };
     return levelMap[level] || 'badge-info';
 }

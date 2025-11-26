@@ -40,6 +40,17 @@ export default defineConfig({
         target: 'http://localhost:8084',
         changeOrigin: true,
         secure: false,
+      },
+      '/api/alerts': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/alert-ws': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+        secure: false,
+        ws: true
       }
     }
   },
