@@ -53,6 +53,9 @@ management:
         enabled: true
 
 app:
+  # URL to push logs to dashboard (for live streaming)
+  dashboard-url: http://localhost:8084
+
   alert:
     keywords:
       - "NullPointerException"

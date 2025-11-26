@@ -12,7 +12,7 @@ const GrafanaDashboard = () => {
                     src="http://localhost:3000/d/devpulse-dashboard/devpulse-dashboard?theme=dark&kiosk"
                     width="100%"
                     height="100%"
-                    frameBorder="0"
+                    className="border-0"
                     title="Grafana Dashboard"
                 />
             </div>
