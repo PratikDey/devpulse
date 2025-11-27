@@ -1,16 +1,19 @@
 server:
-  port: 8081
+  port: ${ORDER_PORT:8082}
 
 spring:
   application:
-    name: producer-product
+    name: producer-order
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
       properties:
+        # Allow sending DTO classes without type headers
         spring.json.add.type.headers: false
+
 
 management:
   endpoints:
@@ -27,4 +30,4 @@ management:
 
 logging:
   level:
-    root: INFO
+    root: ${LOG_LEVEL:INFO}

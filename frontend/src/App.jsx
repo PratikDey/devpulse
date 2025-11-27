@@ -1,9 +1,12 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
-import Dashboard from "./components/Dashboard";
-import LiveLogStream from "./components/LiveLogStream";
-import OrderManagement from "./components/OrderManagement";
-import AlertToast from "./components/AlertToast";
+import Dashboard from "@components/Dashboard";
+import LiveLogStream from "@components/LiveLogStream";
+import OrderManagement from "@components/OrderManagement";
+import ProductManagement from '@components/ProductManagement';
+import GrafanaDashboard from "@components/GrafanaDashboard";
+import AlertsPage from "@components/AlertsPage";
+import AlertToast from "@components/AlertToast";
 
 function AppLayout() {
   const location = useLocation();
@@ -43,11 +46,38 @@ function AppLayout() {
             </li>
             <li className="nav-item">
               <Link
+                to="/alerts"
+                className={`nav-link ${isActive('/alerts') ? 'active' : ''}`}
+              >
+                <span>🔔</span>
+                <span>Alerts</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
                 to="/orders"
                 className={`nav-link ${isActive('/orders') ? 'active' : ''}`}
               >
                 <span>📦</span>
                 <span>Orders</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/products"
+                className={`nav-link ${isActive('/products') ? 'active' : ''}`}
+              >
+                <span>🏷️</span>
+                <span>Products</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/metrics"
+                className={`nav-link ${isActive('/metrics') ? 'active' : ''}`}
+              >
+                <span>📈</span>
+                <span>Metrics</span>
               </Link>
             </li>
           </ul>
@@ -68,7 +98,10 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/live" element={<LiveLogStream />} />
+          <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/orders" element={<OrderManagement />} />
+          <Route path="/products" element={<ProductManagement />} />
+          <Route path="/metrics" element={<GrafanaDashboard />} />
         </Routes>
       </main>
 

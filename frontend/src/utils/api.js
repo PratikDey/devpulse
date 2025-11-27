@@ -5,13 +5,13 @@
 
 // In development, use empty string to leverage Vite proxy
 // In production, use environment variable or full URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+import config from '@config';
 
 /**
  * Generic fetch wrapper with error handling
  */
-async function apiFetch(endpoint, options = {}) {
-    const url = `${API_BASE_URL}${endpoint}`;
+async function apiFetch(baseUrl, endpoint, options = {}) {
+    const url = `${baseUrl}${endpoint}`;
 
     try {
         const response = await fetch(url, {
@@ -42,28 +42,28 @@ async function apiFetch(endpoint, options = {}) {
  * Fetch paginated logs
  */
 export async function fetchLogs(page = 0, size = 20) {
-    return apiFetch(`/api/logs?page=${page}&size=${size}`);
+    return apiFetch(config.api.logs, `/api/logs?page=${page}&size=${size}`);
 }
 
 /**
  * Fetch logs by service name
  */
 export async function fetchLogsByService(serviceName, page = 0, size = 20) {
-    return apiFetch(`/api/logs/service/${encodeURIComponent(serviceName)}?page=${page}&size=${size}`);
+    return apiFetch(config.api.logs, `/api/logs/service/${encodeURIComponent(serviceName)}?page=${page}&size=${size}`);
 }
 
 /**
  * Fetch logs by level (DEBUG, INFO, WARN, ERROR)
  */
 export async function fetchLogsByLevel(level, page = 0, size = 20) {
-    return apiFetch(`/api/logs/level/${encodeURIComponent(level)}?page=${page}&size=${size}`);
+    return apiFetch(config.api.logs, `/api/logs/level/${encodeURIComponent(level)}?page=${page}&size=${size}`);
 }
 
 /**
  * Fetch recent logs (top 100)
  */
 export async function fetchRecentLogs() {
-    return apiFetch('/api/logs/recent');
+    return apiFetch(config.api.logs, '/api/logs/recent');
 }
 
 /**
@@ -71,6 +71,7 @@ export async function fetchRecentLogs() {
  */
 export async function fetchLogsByRange(fromIso, toIso, page = 0, size = 20) {
     return apiFetch(
+        config.api.logs,
         `/api/logs/range?from=${encodeURIComponent(fromIso)}&to=${encodeURIComponent(toIso)}&page=${page}&size=${size}`
     );
 }
@@ -79,7 +80,18 @@ export async function fetchLogsByRange(fromIso, toIso, page = 0, size = 20) {
  * Create EventSource for real-time log streaming (SSE)
  */
 export function createLogStream() {
-    return new EventSource(`${API_BASE_URL}/api/logs/stream`);
+    return new EventSource(`${config.api.logs}/api/logs/stream`);
+}
+
+// ================================================
+// Alert API
+// ================================================
+
+/**
+ * Fetch all alerts
+ */
+export async function fetchAlerts() {
+    return apiFetch(config.api.alerts, '/api/alerts');
 }
 
 // ================================================
@@ -120,7 +132,9 @@ export function getLogLevelClass(level) {
         DEBUG: 'badge-debug',
         INFO: 'badge-info',
         WARN: 'badge-warn',
+        WARNING: 'badge-warn',
         ERROR: 'badge-error',
+        CRITICAL: 'badge-error',
     };
     return levelMap[level] || 'badge-info';
 }

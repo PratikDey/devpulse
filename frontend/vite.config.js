@@ -18,17 +18,39 @@ export default defineConfig({
       '@pages': path.resolve(__dirname, './src/pages'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@context': path.resolve(__dirname, './src/context'),
-      '@utils': path.resolve(__dirname, './src/utils')
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@config': path.resolve(__dirname, './src/config')
     }
   },
   server: {
     port: 5173,
     open: true,
     proxy: {
-      '/api': {
+      '/api/products': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api/orders': {
         target: 'http://localhost:8082',
         changeOrigin: true,
         secure: false,
+      },
+      '/api/logs': {
+        target: 'http://localhost:8084',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api/alerts': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/alert-ws': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+        secure: false,
+        ws: true
       }
     }
   },
@@ -36,5 +58,8 @@ export default defineConfig({
     target: 'esnext',
     sourcemap: true
   },
-  esbuild: false // ensures Rolldown (not esbuild) handles bundling
+  esbuild: false, // ensures Rolldown (not esbuild) handles bundling
+  define: {
+    global: 'window',
+  }
 });

@@ -1,0 +1,22 @@
+server:
+  port: ${DASHBOARD_PORT:8084}
+
+spring:
+  application:
+    name: log-dashboard
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://localhost:27017/devpulse_logs}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}

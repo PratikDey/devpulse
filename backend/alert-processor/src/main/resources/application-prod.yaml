@@ -1,0 +1,61 @@
+server:
+  port: ${ALERT_PORT:8085}
+
+spring:
+  application:
+    name: alert-processor
+
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    consumer:
+      group-id: alert-processor-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://localhost:27017/devpulse_alerts}
+
+# Optional: SMTP (configure for email notifications)
+  mail:
+    host: ${MAIL_HOST:smtp.freesmtpservers.com}
+    port: ${MAIL_PORT:25}
+    username: ${MAIL_USERNAME:testing1234@freesmtpservers.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+#            required: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+# Actuator + Prometheus for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Prometheus & metric rules config
+prometheus:
+  base-url: ${PROMETHEUS_URL:http://localhost:9090}
+
+# Path to YAML rule file (relative to classpath or absolute)
+metrics:
+  rules-file: classpath:metrics-rules.yaml
+
+# WebSocket allowed origin
+websocket:
+  allowed-origins: "${WEBSOCKET_ALLOWED_ORIGINS:*}"

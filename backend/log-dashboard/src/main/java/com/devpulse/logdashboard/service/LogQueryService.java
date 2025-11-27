@@ -1,12 +1,14 @@
 package com.devpulse.logdashboard.service;
 
 import com.devpulse.common.dto.LogResponseDto;
+import com.devpulse.common.enums.LogLevel;
 import com.devpulse.logdashboard.model.LogDocument;
 import com.devpulse.logdashboard.repository.LogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +38,7 @@ public class LogQueryService {
     public Page<LogResponseDto> findByLevel(String levelStr, int page, int size) {
         Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, size), Sort.by(Sort.Direction.DESC, "timestamp"));
         try {
-            var level = com.devpulse.common.enums.LogLevel.valueOf(levelStr.toUpperCase());
+            var level = LogLevel.valueOf(levelStr.toUpperCase());
             Page<LogDocument> docs = repository.findByLevel(level, pageable);
             return docs.map(this::toDto);
         } catch (IllegalArgumentException ex) {
@@ -46,7 +48,7 @@ public class LogQueryService {
 
     public Page<LogResponseDto> findBetween(InstantRange range, int page, int size) {
         Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, size), Sort.by(Sort.Direction.DESC, "timestamp"));
-        Page<LogDocument> docs = repository.findByTimestampBetween(range.getFrom(), range.getTo(), pageable);
+        Page<LogDocument> docs = repository.findByTimestampBetween(range.from(), range.to(), pageable);
         return docs.map(this::toDto);
     }
 
@@ -65,12 +67,9 @@ public class LogQueryService {
                 .build();
     }
 
-    /** small helper for timestamp range */
-    public static class InstantRange {
-        private final java.time.Instant from;
-        private final java.time.Instant to;
-        public InstantRange(java.time.Instant from, java.time.Instant to) { this.from = from; this.to = to; }
-        public java.time.Instant getFrom() { return from; }
-        public java.time.Instant getTo() { return to; }
+    /**
+     * small helper for timestamp range
+     */
+        public record InstantRange(Instant from, Instant to) {
     }
 }

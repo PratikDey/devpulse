@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: ${COLLECTOR_PORT:8083}
 
 spring:
   application:
@@ -7,7 +7,7 @@ spring:
 
   # Kafka consumer configuration
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -42,7 +42,7 @@ spring:
   # MongoDB configuration
   data:
     mongodb:
-      uri: mongodb://localhost:27017/devpulse_logs
+      uri: ${MONGO_URI:mongodb://localhost:27017/devpulse_logs}
 
 # Actuator + Prometheus for monitoring
 management:
@@ -60,8 +60,8 @@ management:
 
 app:
   # URL to push logs to dashboard (for live streaming)
-  dashboard-url: http://localhost:8084
-
+  dashboard-url: ${LOG_DASHBOARD_URL:http://localhost:8084}
+  
   alert:
     keywords:
       - "NullPointerException"
