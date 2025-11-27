@@ -55,3 +55,56 @@ jobs:
       with:
         name: frontend-dist
         path: frontend/dist
+
+  deploy:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download Backend Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-jars
+        path: backend-jars
+
+    - name: Download Frontend Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: frontend-dist
+        path: frontend-dist
+
+    - name: Copy Files to Server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        source: "backend-jars,frontend-dist,deploy.sh,infra/nginx/devpulse"
+        target: "/root/project/devpulse"
+        strip_components: 0
+
+    - name: Deploy on Server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /root/project/devpulse
+          
+          # Update Backend Jars
+          # Copy from uploaded artifact folder to actual backend folder
+          # -r to copy directories recursively
+          # -f to force overwrite
+          cp -rf backend-jars/backend/* backend/
+          
+          # Update Frontend Assets
+          mkdir -p frontend/dist
+          cp -rf frontend-dist/* frontend/dist/
+          
+          # Ensure deploy script is executable
+          chmod +x deploy.sh
+          
+          # Run deployment
+          ./deploy.sh

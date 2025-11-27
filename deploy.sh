@@ -11,6 +11,16 @@ else
     exit 1
 fi
 
+echo "Updating Nginx configuration..."
+if [ -f infra/nginx/devpulse ]; then
+    sudo cp infra/nginx/devpulse /etc/nginx/sites-available/devpulse
+    sudo ln -sf /etc/nginx/sites-available/devpulse /etc/nginx/sites-enabled/
+    sudo nginx -t && sudo systemctl reload nginx
+    echo "Nginx configuration updated and reloaded."
+else
+    echo "Warning: infra/nginx/devpulse not found. Skipping Nginx update."
+fi
+
 echo "Starting DevPulse Services..."
 
 # Start Producer Product

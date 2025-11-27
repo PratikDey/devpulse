@@ -15,7 +15,7 @@ const config = {
         logs: import.meta.env.VITE_API_LOG_URL || '',
         alerts: import.meta.env.VITE_API_ALERT_URL || '',
     },
-    grafanaUrl: import.meta.env.VITE_GRAFANA_URL || 'http://localhost:3000/d/devpulse-dashboard/devpulse-dashboard?theme=dark&kiosk',
+    grafanaUrl: import.meta.env.VITE_GRAFANA_URL || '/grafana/d/devpulse-dashboard/devpulse-dashboard?theme=dark&kiosk',
 };
 
 export default config;
