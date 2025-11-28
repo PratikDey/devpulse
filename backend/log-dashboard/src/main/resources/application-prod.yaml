@@ -6,7 +6,7 @@ spring:
     name: log-dashboard
   data:
     mongodb:
-      uri: ${MONGO_URI:mongodb://localhost:27017/devpulse_logs}
+      uri: ${MONGO_URI_LOGS:mongodb://localhost:27017/devpulse_logs}
 
 management:
   endpoints:

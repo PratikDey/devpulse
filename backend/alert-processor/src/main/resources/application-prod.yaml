@@ -15,13 +15,13 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGO_URI:mongodb://localhost:27017/devpulse_alerts}
+      uri: ${MONGO_URI_ALERTS:mongodb://localhost:27017/devpulse_alerts}
 
-# Optional: SMTP (configure for email notifications)
+  # Optional: SMTP (configure for email notifications)
   mail:
     host: ${MAIL_HOST:smtp.freesmtpservers.com}
     port: ${MAIL_PORT:25}
-    username: ${MAIL_USERNAME:testing1234@freesmtpservers.com}
+    username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
     properties:
       mail:
@@ -29,7 +29,7 @@ spring:
           auth: false
           starttls:
             enable: false
-#            required: true
+          #required: true
           connectiontimeout: 5000
           timeout: 3000
           writetimeout: 5000

@@ -42,7 +42,7 @@ spring:
   # MongoDB configuration
   data:
     mongodb:
-      uri: ${MONGO_URI:mongodb://localhost:27017/devpulse_logs}
+      uri: ${MONGO_URI_LOGS:mongodb://localhost:27017/devpulse_logs}
 
 # Actuator + Prometheus for monitoring
 management:
@@ -61,7 +61,7 @@ management:
 app:
   # URL to push logs to dashboard (for live streaming)
   dashboard-url: ${LOG_DASHBOARD_URL:http://localhost:8084}
-  
+
   alert:
     keywords:
       - "NullPointerException"

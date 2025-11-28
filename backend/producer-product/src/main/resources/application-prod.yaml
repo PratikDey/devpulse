@@ -12,6 +12,10 @@ spring:
       properties:
         spring.json.add.type.headers: false
 
+  data:
+    mongodb:
+      uri: ${MONGO_URI_PRODUCT:mongodb://localhost:27017/devpulse_products}
+
 management:
   endpoints:
     web:
